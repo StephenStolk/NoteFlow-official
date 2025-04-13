@@ -1,0 +1,406 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground transition-colors duration-300;
+  }
+}
+
+/* Mood-specific styles */
+html.mood-motivated {
+  --primary: 24 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 100% 50%;
+  --accent: 45 100% 50%;
+  --background: 30 100% 97%;
+  --card: 0 0% 100%;
+  --muted: 30 20% 90%;
+  --muted-foreground: 30 10% 40%;
+}
+
+html.mood-feelingLow {
+  --primary: 210 100% 60%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 270 100% 60%;
+  --accent: 250 100% 60%;
+  --background: 210 100% 97%;
+  --card: 0 0% 100%;
+  --muted: 210 20% 90%;
+  --muted-foreground: 210 10% 40%;
+}
+
+html.mood-energized {
+  --primary: 190 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 140 100% 50%;
+  --accent: 210 100% 50%;
+  --background: 190 100% 97%;
+  --card: 0 0% 100%;
+  --muted: 190 20% 90%;
+  --muted-foreground: 190 10% 40%;
+}
+
+html.mood-lazy {
+  --primary: 45 100% 60%;
+  --primary-foreground: 0 0% 20%;
+  --secondary: 350 100% 80%;
+  --accent: 30 100% 60%;
+  --background: 45 100% 97%;
+  --card: 0 0% 100%;
+  --muted: 45 20% 90%;
+  --muted-foreground: 45 10% 40%;
+}
+
+html.mood-focused {
+  --primary: 0 0% 20%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 10%;
+  --accent: 0 0% 30%;
+  --background: 0 0% 97%;
+  --card: 0 0% 100%;
+  --muted: 0 0% 90%;
+  --muted-foreground: 0 0% 40%;
+}
+
+html.mood-creative {
+  --primary: 330 100% 60%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 280 100% 60%;
+  --accent: 270 100% 60%;
+  --background: 330 100% 97%;
+  --card: 0 0% 100%;
+  --muted: 330 20% 90%;
+  --muted-foreground: 330 10% 40%;
+}
+
+/* Dark mode mood overrides */
+.dark.mood-motivated,
+.dark html.mood-motivated {
+  --background: 24 30% 10%;
+  --card: 24 30% 15%;
+  --muted: 24 30% 20%;
+  --muted-foreground: 30 15% 70%;
+}
+
+.dark.mood-feelingLow,
+.dark html.mood-feelingLow {
+  --background: 210 30% 10%;
+  --card: 210 30% 15%;
+  --muted: 210 30% 20%;
+  --muted-foreground: 210 15% 70%;
+}
+
+.dark.mood-energized,
+.dark html.mood-energized {
+  --background: 190 30% 10%;
+  --card: 190 30% 15%;
+  --muted: 190 30% 20%;
+  --muted-foreground: 190 15% 70%;
+}
+
+.dark.mood-lazy,
+.dark html.mood-lazy {
+  --background: 45 30% 10%;
+  --card: 45 30% 15%;
+  --muted: 45 30% 20%;
+  --muted-foreground: 45 15% 70%;
+}
+
+.dark.mood-focused,
+.dark html.mood-focused {
+  --background: 0 0% 7%;
+  --card: 0 0% 12%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 70%;
+}
+
+.dark.mood-creative,
+.dark html.mood-creative {
+  --background: 330 30% 10%;
+  --card: 330 30% 15%;
+  --muted: 330 30% 20%;
+  --muted-foreground: 330 15% 70%;
+}
+
+/* Animation speeds */
+.animate-very-slow {
+  transition-duration: 1.5s;
+}
+
+.animate-slow {
+  transition-duration: 0.8s;
+}
+
+.animate-medium {
+  transition-duration: 0.5s;
+}
+
+.animate-fast {
+  transition-duration: 0.3s;
+}
+
+.animate-very-fast {
+  transition-duration: 0.15s;
+}
+
+/* Animation styles */
+.animate-bounce {
+  animation: bounce 0.5s;
+}
+
+.animate-fade {
+  animation: fade 0.8s;
+}
+
+.animate-pulse {
+  animation: pulse 0.3s;
+}
+
+.animate-float {
+  animation: float 2s infinite;
+}
+
+/* Mood change animation */
+.animate-mood-change {
+  animation: mood-change 1s forwards;
+}
+
+/* Mood transitions */
+.transition-motivated {
+  animation: transition-to-motivated 1.5s forwards;
+}
+
+.transition-feelingLow {
+  animation: transition-to-feelingLow 1.5s forwards;
+}
+
+.transition-energized {
+  animation: transition-to-energized 1.5s forwards;
+}
+
+.transition-lazy {
+  animation: transition-to-lazy 1.5s forwards;
+}
+
+.transition-focused {
+  animation: transition-to-focused 1.5s forwards;
+}
+
+.transition-creative {
+  animation: transition-to-creative 1.5s forwards;
+}
+
+/* Mood transition animations */
+@keyframes transition-to-motivated {
+  0% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+  50% {
+    background-color: rgba(255, 150, 0, 0.2);
+  }
+  100% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes transition-to-feelingLow {
+  0% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+  50% {
+    background-color: rgba(100, 150, 255, 0.2);
+  }
+  100% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes transition-to-energized {
+  0% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+  50% {
+    background-color: rgba(0, 200, 255, 0.2);
+  }
+  100% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes transition-to-lazy {
+  0% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+  50% {
+    background-color: rgba(255, 200, 100, 0.2);
+  }
+  100% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes transition-to-focused {
+  0% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+  50% {
+    background-color: rgba(100, 100, 100, 0.2);
+  }
+  100% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes transition-to-creative {
+  0% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+  50% {
+    background-color: rgba(255, 100, 200, 0.2);
+  }
+  100% {
+    background-color: rgba(255, 255, 255, 0);
+  }
+}
+
+/* Additional animation for floating very slowly */
+@keyframes floatVerySlowly {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(5px, 5px);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes floatSideways {
+  0% {
+    transform: translateX(-20%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes mood-change {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}

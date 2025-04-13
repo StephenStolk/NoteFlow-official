@@ -1,0 +1,85 @@
+const affirmations = {
+  motivated: [
+    "You're crushing it! 💪",
+    "One step closer to your goals!",
+    "Momentum builds with every task!",
+    "You're on fire today! 🔥",
+    "Keep that energy going!",
+    "Unstoppable progress!",
+    "You're making it happen!",
+    "Success is built one task at a time!",
+  ],
+  feelingLow: [
+    "Every small step matters. Be proud! 💙",
+    "You're doing great, even on tough days.",
+    "That's progress, no matter how small.",
+    "Gentle progress is still progress. ✨",
+    "You showed up, and that counts for a lot.",
+    "One step at a time, you're doing well.",
+    "Be kind to yourself, you're making progress.",
+    "Small victories add up to big wins.",
+  ],
+  energized: [
+    "Unstoppable! ⚡",
+    "Look at you go!",
+    "Another one down, what's next?",
+    "You're in the zone!",
+    "That energy is paying off!",
+    "Lightning fast progress!",
+    "Charging through your tasks!",
+    "Electrifying productivity!",
+  ],
+  lazy: [
+    "Nice work, even on a lazy day! 😌",
+    "Slow and steady wins the race.",
+    "Cozy productivity at its finest.",
+    "Even small tasks count today.",
+    "Taking it easy but still getting things done!",
+    "Relaxed but effective!",
+    "Gentle progress is still progress.",
+    "Accomplishing things at your own pace!",
+  ],
+  focused: [
+    "Deep work pays off. ✓",
+    "Clean execution.",
+    "Task eliminated.",
+    "Focus leads to completion.",
+    "Distraction-free progress.",
+    "Laser-focused achievement.",
+    "Methodical progress.",
+    "Precision execution.",
+  ],
+  creative: [
+    "Creative genius at work! 🎨",
+    "Your imagination is unstoppable!",
+    "Another brilliant idea executed!",
+    "Your creative flow is amazing today!",
+    "Turning inspiration into completion!",
+    "Artfully accomplished!",
+    "Creatively conquering your tasks!",
+    "Brilliantly done!",
+  ],
+  general: [
+    "Task complete! ✅",
+    "Great job!",
+    "Progress made!",
+    "Moving forward!",
+    "Well done!",
+    "Keep it up!",
+    "You're doing great!",
+    "Excellent work!",
+    "That's the way to do it!",
+    "You're making great progress!",
+    "Another step forward!",
+    "You're on a roll!",
+    "Fantastic work!",
+    "You're making it happen!",
+  ],
+}
+
+export function getRandomAffirmation(mood?: keyof typeof affirmations): string {
+  const category = mood && mood in affirmations ? mood : "general"
+  const options = affirmations[category]
+  const randomIndex = Math.floor(Math.random() * options.length)
+  return options[randomIndex]
+}
