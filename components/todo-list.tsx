@@ -45,8 +45,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useMobile } from "@/hooks/use-mobile";
 import FocusMode from "@/components/focus-mode";
 import { Progress } from "@/components/ui/progress";
-import { postGlobalTaskSheet } from "@/lib/supabase/database";
-import { useAuth } from "@/components/auth/auth-context"
 
 interface TodoListProps {
   tasks: Task[];
@@ -432,27 +430,6 @@ export default function TodoList({
     return (completedSubTasks / task.subTasks.length) * 100;
   };
 
-  
-
-    try {
-      const user = useAuth();
-      const userId = user.id;
-      const result = await postGlobalTaskSheet(tasks,userId);
-      console.log("Task sheet shared successfully:", result);
-      toast({
-        title: "Task sheet shared!",
-        description: "Your task sheet is now visible globally.",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error("Error sharing task sheet:", error);
-      toast({
-        title: "Error sharing task sheet",
-        description: "There was a problem sharing your task sheet. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <motion.div
@@ -588,10 +565,10 @@ export default function TodoList({
                 type="button"
                 variant="default"
                 size="sm"
-                onClick={handleShareTaskSheet}
+                disabled
                 className="transition-all duration-300 hover:scale-105"
               >
-                Share Task Sheet
+                Share Task Sheet (TBA)
               </Button>
             </div>
           </form>

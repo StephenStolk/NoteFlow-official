@@ -21,13 +21,13 @@ import { useMobile } from "@/hooks/use-mobile"
 import { useTheme } from "@/components/theme-provider"
 import { AuthModal } from "./auth/auth-modal"
 import { useAuth } from "./auth/auth-context"
+import ProductHuntBadge from "./producthunt"
 
 interface LandingPageProps {
   onGetStarted: () => void
   onNavigateToLanding?: () => void
   showBackToApp?: boolean
 }
-
 
 export default function LandingPage({ onGetStarted, onNavigateToLanding, showBackToApp }: LandingPageProps) {
   const [activeFeature, setActiveFeature] = useState(0)
@@ -323,6 +323,7 @@ export default function LandingPage({ onGetStarted, onNavigateToLanding, showBac
             >
               Explore Features
             </Button>
+          <ProductHuntBadge />
           </motion.div>
 
           <motion.div variants={itemVariants} className="mt-8 flex items-center justify-center md:justify-start">

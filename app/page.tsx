@@ -210,7 +210,7 @@ export default function Home() {
         )
 
         // Add the new task with its ID from Supabase
-        setTasks([...tasks, { ...task, id: newTask.id }])
+        setTasks([...tasks, { ...task, id: newTask.id as string }])
       } catch (error) {
         console.error("Error creating task:", error)
         toast({
