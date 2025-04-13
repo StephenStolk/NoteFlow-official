@@ -28,6 +28,7 @@ interface LandingPageProps {
   showBackToApp?: boolean
 }
 
+
 export default function LandingPage({ onGetStarted, onNavigateToLanding, showBackToApp }: LandingPageProps) {
   const [activeFeature, setActiveFeature] = useState(0)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
@@ -226,7 +227,10 @@ export default function LandingPage({ onGetStarted, onNavigateToLanding, showBac
                     size="sm"
                     onClick={() => {
                       setIsAuthModalOpen(true)
-                      setTimeout(() => document.querySelector('button[aria-label="Register"]')?.click(), 100)
+                      setTimeout(() => {
+                        const button = document.querySelector('button[aria-label="Register"]') as HTMLButtonElement | null;
+                        button?.click();
+                      }, 100)
                     }}
                     className="flex items-center gap-1"
                   >

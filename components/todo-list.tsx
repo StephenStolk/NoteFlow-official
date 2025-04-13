@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { useMood } from "@/components/mood-context"
-import type { Task, SubTask } from "@/lib/types"
-import { v4 as uuidv4 } from "uuid"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react";
+import { useMood } from "@/components/mood-context";
+import type { Task, SubTask } from "@/lib/types";
+import { v4 as uuidv4 } from "uuid";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Check,
   Trash2,
@@ -21,56 +21,77 @@ import {
   List,
   Focus,
   CheckCircle,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Textarea } from "@/components/ui/textarea"
-import { format, isToday, isTomorrow, addDays } from "date-fns"
-import { cn } from "@/lib/utils"
-import { useToast } from "@/hooks/use-toast"
-import { useMobile } from "@/hooks/use-mobile"
-import FocusMode from "@/components/focus-mode"
-import { Progress } from "@/components/ui/progress"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
+import { format, isToday, isTomorrow, addDays } from "date-fns";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { useMobile } from "@/hooks/use-mobile";
+import FocusMode from "@/components/focus-mode";
+import { Progress } from "@/components/ui/progress";
+import { postGlobalTaskSheet } from "@/lib/supabase/database";
+import { useAuth } from "@/components/auth/auth-context"
 
 interface TodoListProps {
-  tasks: Task[]
-  onAddTask: (task: Task) => void
-  onUpdateTask: (task: Task) => void
-  onDeleteTask: (id: string) => void
-  onCompleteTask: (id: string) => void
+  tasks: Task[];
+  onAddTask: (task: Task) => void;
+  onUpdateTask: (task: Task) => void;
+  onDeleteTask: (id: string) => void;
+  onCompleteTask: (id: string) => void;
 }
 
-export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask, onCompleteTask }: TodoListProps) {
-  const { currentMood, moodData, isTransitioning } = useMood()
-  const [newTaskText, setNewTaskText] = useState("")
-  const [newTaskCategory, setNewTaskCategory] = useState("personal")
-  const [newTaskPriority, setNewTaskPriority] = useState(false)
-  const [newTaskDueDate, setNewTaskDueDate] = useState("")
-  const [editingTask, setEditingTask] = useState<string | null>(null)
-  const [editText, setEditText] = useState("")
-  const [expandedTask, setExpandedTask] = useState<string | null>(null)
-  const [taskNotes, setTaskNotes] = useState<Record<string, string>>({})
-  const [isDeleting, setIsDeleting] = useState<string | null>(null)
-  const [focusedTask, setFocusedTask] = useState<Task | null>(null)
-  const [newSubTask, setNewSubTask] = useState("")
-  const [editingSubTask, setEditingSubTask] = useState<{ taskId: string; subTaskId: string } | null>(null)
-  const [editSubTaskText, setEditSubTaskText] = useState("")
-  const { toast } = useToast()
-  const isMobile = useMobile()
+export default function TodoList({
+  tasks,
+  onAddTask,
+  onUpdateTask,
+  onDeleteTask,
+  onCompleteTask,
+}: TodoListProps) {
+  const { currentMood, moodData, isTransitioning } = useMood();
+  const [newTaskText, setNewTaskText] = useState("");
+  const [newTaskCategory, setNewTaskCategory] = useState("personal");
+  const [newTaskPriority, setNewTaskPriority] = useState(false);
+  const [newTaskDueDate, setNewTaskDueDate] = useState("");
+  const [editingTask, setEditingTask] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [expandedTask, setExpandedTask] = useState<string | null>(null);
+  const [taskNotes, setTaskNotes] = useState<Record<string, string>>({});
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [focusedTask, setFocusedTask] = useState<Task | null>(null);
+  const [newSubTask, setNewSubTask] = useState("");
+  const [editingSubTask, setEditingSubTask] = useState<{
+    taskId: string;
+    subTaskId: string;
+  } | null>(null);
+  const [editSubTaskText, setEditSubTaskText] = useState("");
+  const { toast } = useToast();
+  const isMobile = useMobile();
 
   // Reset expanded task when mood changes to avoid UI glitches
   useEffect(() => {
     if (isTransitioning) {
-      setExpandedTask(null)
+      setExpandedTask(null);
     }
-  }, [isTransitioning, currentMood])
+  }, [isTransitioning, currentMood]);
 
   const handleAddTask = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (newTaskText.trim()) {
       const newTask = {
         id: uuidv4(),
@@ -82,122 +103,126 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
         dueDate: newTaskDueDate || undefined,
         notes: "",
         subTasks: [],
-      }
+      };
 
-      onAddTask(newTask)
-      setNewTaskText("")
-      setNewTaskPriority(false)
-      setNewTaskDueDate("")
+      onAddTask(newTask);
+      setNewTaskText("");
+      setNewTaskPriority(false);
+      setNewTaskDueDate("");
 
       // Show success toast
       toast({
         title: "Task added",
         description: "Your new task has been created.",
         duration: 2000,
-      })
+      });
     }
-  }
+  };
 
   const startEditing = (task: Task) => {
-    setEditingTask(task.id)
-    setEditText(task.text)
-  }
+    setEditingTask(task.id);
+    setEditText(task.text);
+  };
 
   const saveEdit = (task: Task) => {
     if (editText.trim() && editText !== task.text) {
-      onUpdateTask({ ...task, text: editText })
+      onUpdateTask({ ...task, text: editText });
       toast({
         title: "Task updated",
         description: "Your task has been updated successfully.",
         duration: 2000,
-      })
+      });
     }
-    setEditingTask(null)
-  }
+    setEditingTask(null);
+  };
 
   const togglePriority = (task: Task) => {
-    onUpdateTask({ ...task, priority: !task.priority })
+    onUpdateTask({ ...task, priority: !task.priority });
 
     toast({
       title: task.priority ? "Priority removed" : "Priority added",
-      description: task.priority ? "Task is no longer marked as priority." : "Task has been marked as priority.",
+      description: task.priority
+        ? "Task is no longer marked as priority."
+        : "Task has been marked as priority.",
       duration: 2000,
-    })
-  }
+    });
+  };
 
   const toggleExpandTask = (taskId: string) => {
-    setExpandedTask(expandedTask === taskId ? null : taskId)
-  }
+    setExpandedTask(expandedTask === taskId ? null : taskId);
+  };
 
   const updateTaskNotes = (taskId: string, notes: string) => {
-    setTaskNotes((prev) => ({ ...prev, [taskId]: notes }))
-  }
+    setTaskNotes((prev) => ({ ...prev, [taskId]: notes }));
+  };
 
   const saveTaskNotes = (task: Task) => {
-    const taskId = task.id
+    const taskId = task.id;
     if (taskId in taskNotes) {
-      onUpdateTask({ ...task, notes: taskNotes[taskId] })
+      onUpdateTask({ ...task, notes: taskNotes[taskId] });
       toast({
         title: "Notes saved",
         description: "Your task notes have been updated.",
         duration: 2000,
-      })
+      });
     }
-  }
+  };
 
   const updateTaskDueDate = (task: Task, dueDate: string) => {
-    onUpdateTask({ ...task, dueDate })
+    onUpdateTask({ ...task, dueDate });
     toast({
       title: "Due date updated",
-      description: dueDate ? `Task due date set to ${formatDueDate(dueDate)}` : "Due date removed",
+      description: dueDate
+        ? `Task due date set to ${formatDueDate(dueDate)}`
+        : "Due date removed",
       duration: 2000,
-    })
-  }
+    });
+  };
 
   const handleDeleteTask = (id: string) => {
-    setIsDeleting(id)
+    setIsDeleting(id);
 
     // Add a small delay for the animation to play
     setTimeout(() => {
-      onDeleteTask(id)
-      setIsDeleting(null)
+      onDeleteTask(id);
+      setIsDeleting(null);
 
       toast({
         title: "Task deleted",
         description: "Your task has been removed.",
         duration: 2000,
-      })
-    }, 300)
-  }
+      });
+    }, 300);
+  };
 
   // Format due date in a more human-readable way
   const formatDueDate = (dateString: string) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
 
     if (isToday(date)) {
-      return "Today"
+      return "Today";
     } else if (isTomorrow(date)) {
-      return "Tomorrow"
+      return "Tomorrow";
     } else if (date < addDays(new Date(), 7)) {
-      return format(date, "EEEE") // Day name
+      return format(date, "EEEE"); // Day name
     } else {
-      return format(date, "MMM d, yyyy")
+      return format(date, "MMM d, yyyy");
     }
-  }
+  };
 
   // Enter focus mode for a task
   const enterFocusMode = (task: Task) => {
-    setFocusedTask(task)
-  }
+    setFocusedTask(task);
+  };
 
   // Exit focus mode
   const exitFocusMode = () => {
-    setFocusedTask(null)
-  }
+    setFocusedTask(null);
+  };
 
   // Add sub-task to a task
   const addSubTask = (task: Task) => {
-    if (!newSubTask.trim()) return
+    if (!newSubTask.trim()) return;
 
     const newSubTaskObj: SubTask = {
       id: uuidv4(),
@@ -205,27 +230,27 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
       completed: false,
       status: "todo",
       createdAt: new Date().toISOString(),
-    }
+    };
 
     const updatedTask = {
       ...task,
       subTasks: [...(task.subTasks || []), newSubTaskObj],
-    }
+    };
 
-    onUpdateTask(updatedTask)
-    setNewSubTask("")
+    onUpdateTask(updatedTask);
+    setNewSubTask("");
 
     toast({
       title: "Sub-task added",
       description: "New sub-task has been added.",
       duration: 2000,
-    })
-  }
+    });
+  };
 
   // Toggle sub-task completion
   const toggleSubTaskCompletion = (taskId: string, subTaskId: string) => {
-    const task = tasks.find((t) => t.id === taskId)
-    if (!task || !task.subTasks) return
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task || !task.subTasks) return;
 
     const updatedSubTasks = task.subTasks.map((st) =>
       st.id === subTaskId
@@ -234,74 +259,80 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
             completed: !st.completed,
             status: !st.completed ? "done" : "todo",
           }
-        : st,
-    )
+        : st
+    );
 
     const updatedTask = {
       ...task,
       subTasks: updatedSubTasks,
-    }
+    };
 
-    onUpdateTask(updatedTask)
+    onUpdateTask(updatedTask);
 
     // Play a subtle sound
-    const audio = new Audio("/complete.mp3")
-    audio.volume = 0.3
-    audio.play().catch(console.error)
-  }
+    const audio = new Audio("/complete.mp3");
+    audio.volume = 0.3;
+    audio.play().catch(console.error);
+  };
 
   // Start editing a sub-task
-  const startEditingSubTask = (taskId: string, subTaskId: string, text: string) => {
-    setEditingSubTask({ taskId, subTaskId })
-    setEditSubTaskText(text)
-  }
+  const startEditingSubTask = (
+    taskId: string,
+    subTaskId: string,
+    text: string
+  ) => {
+    setEditingSubTask({ taskId, subTaskId });
+    setEditSubTaskText(text);
+  };
 
   // Save edited sub-task
   const saveEditedSubTask = () => {
-    if (!editingSubTask) return
+    if (!editingSubTask) return;
 
-    const { taskId, subTaskId } = editingSubTask
-    const task = tasks.find((t) => t.id === taskId)
-    if (!task || !task.subTasks) return
+    const { taskId, subTaskId } = editingSubTask;
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task || !task.subTasks) return;
 
-    const updatedSubTasks = task.subTasks.map((st) => (st.id === subTaskId ? { ...st, text: editSubTaskText } : st))
+    const updatedSubTasks = task.subTasks.map((st) =>
+      st.id === subTaskId ? { ...st, text: editSubTaskText } : st
+    );
 
     const updatedTask = {
       ...task,
       subTasks: updatedSubTasks,
-    }
+    };
 
-    onUpdateTask(updatedTask)
-    setEditingSubTask(null)
-    setEditSubTaskText("")
+    onUpdateTask(updatedTask);
+    setEditingSubTask(null);
+    setEditSubTaskText("");
 
     toast({
       title: "Sub-task updated",
       description: "Your sub-task has been updated.",
       duration: 2000,
-    })
-  }
+    });
+  };
 
   // Delete a sub-task
   const deleteSubTask = (taskId: string, subTaskId: string) => {
-    const task = tasks.find((t) => t.id === taskId)
-    if (!task || !task.subTasks) return
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task || !task.subTasks) return;
 
-    const updatedSubTasks = task.subTasks.filter((st) => st.id !== subTaskId)
+    const updatedSubTasks = task.subTasks.filter((st) => st.id !== subTaskId);
 
     const updatedTask = {
       ...task,
       subTasks: updatedSubTasks,
-    }
+    };
 
-    onUpdateTask(updatedTask)
+    onUpdateTask(updatedTask);
 
     toast({
       title: "Sub-task deleted",
       description: "Your sub-task has been removed.",
       duration: 2000,
-    })
-  }
+    });
+  };
 
   // Animation variants based on current mood
   const getTaskAnimations = () => {
@@ -311,101 +342,129 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
           initial: { y: 20, opacity: 0 },
           animate: { y: 0, opacity: 1, transition: { duration: 0.3 } },
           exit: { x: -300, opacity: 0, transition: { duration: 0.3 } },
-        }
+        };
       case "feelingLow":
         return {
           initial: { opacity: 0 },
           animate: { opacity: 1, transition: { duration: 0.8 } },
           exit: { opacity: 0, transition: { duration: 0.8 } },
-        }
+        };
       case "energized":
         return {
           initial: { scale: 0.8, opacity: 0 },
           animate: { scale: 1, opacity: 1, transition: { duration: 0.2 } },
           exit: { scale: 1.1, opacity: 0, transition: { duration: 0.2 } },
-        }
+        };
       case "lazy":
         return {
           initial: { y: 10, opacity: 0 },
           animate: { y: 0, opacity: 1, transition: { duration: 1 } },
           exit: { y: 10, opacity: 0, transition: { duration: 1 } },
-        }
+        };
       case "focused":
         return {
           initial: { opacity: 0 },
           animate: { opacity: 1, transition: { duration: 0.4 } },
           exit: { opacity: 0, transition: { duration: 0.4 } },
-        }
+        };
       case "creative":
         return {
           initial: { rotate: -2, opacity: 0 },
           animate: { rotate: 0, opacity: 1, transition: { duration: 0.5 } },
           exit: { rotate: 2, opacity: 0, transition: { duration: 0.5 } },
-        }
+        };
       default:
         return {
           initial: { opacity: 0 },
           animate: { opacity: 1 },
           exit: { opacity: 0 },
-        }
+        };
     }
-  }
+  };
 
-  const taskAnimations = getTaskAnimations()
+  const taskAnimations = getTaskAnimations();
 
   const getCategoryColor = (category: string) => {
     switch (category) {
       case "work":
-        return "bg-blue-500 text-white"
+        return "bg-blue-500 text-white";
       case "study":
-        return "bg-green-500 text-white"
+        return "bg-green-500 text-white";
       case "personal":
-        return "bg-purple-500 text-white"
+        return "bg-purple-500 text-white";
       default:
-        return "bg-gray-500 text-white"
+        return "bg-gray-500 text-white";
     }
-  }
+  };
 
   // Check if a task is overdue
   const isOverdue = (dueDate?: string) => {
-    if (!dueDate) return false
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const taskDueDate = new Date(dueDate)
-    return taskDueDate < today
-  }
+    if (!dueDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const taskDueDate = new Date(dueDate);
+    return taskDueDate < today;
+  };
 
   // Get due date badge color
   const getDueDateColor = (dueDate?: string) => {
-    if (!dueDate) return ""
+    if (!dueDate) return "";
 
-    const date = new Date(dueDate)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const date = new Date(dueDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     if (date < today) {
-      return "text-destructive font-medium"
+      return "text-destructive font-medium";
     } else if (isToday(date)) {
-      return "text-orange-500 font-medium"
+      return "text-orange-500 font-medium";
     } else if (isTomorrow(date)) {
-      return "text-yellow-500 font-medium"
+      return "text-yellow-500 font-medium";
     } else {
-      return "text-muted-foreground"
+      return "text-muted-foreground";
     }
-  }
+  };
 
   // Calculate progress for a task with sub-tasks
   const calculateProgress = (task: Task) => {
-    if (!task.subTasks || task.subTasks.length === 0) return 0
-    const completedSubTasks = task.subTasks.filter((st) => st.completed).length
-    return (completedSubTasks / task.subTasks.length) * 100
-  }
+    if (!task.subTasks || task.subTasks.length === 0) return 0;
+    const completedSubTasks = task.subTasks.filter((st) => st.completed).length;
+    return (completedSubTasks / task.subTasks.length) * 100;
+  };
+
+  
+
+    try {
+      const user = useAuth();
+      const userId = user.id;
+      const result = await postGlobalTaskSheet(tasks,userId);
+      console.log("Task sheet shared successfully:", result);
+      toast({
+        title: "Task sheet shared!",
+        description: "Your task sheet is now visible globally.",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error sharing task sheet:", error);
+      toast({
+        title: "Error sharing task sheet",
+        description: "There was a problem sharing your task sheet. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <Card className="transition-all duration-500">
         <CardContent className={`${isMobile ? "p-3" : "p-6"}`}>
-          <h2 className="text-2xl font-semibold mb-4 transition-all duration-300">Tasks</h2>
+          <h2 className="text-2xl font-semibold mb-4 transition-all duration-300">
+            Tasks
+          </h2>
 
           <form onSubmit={handleAddTask} className="mb-6 space-y-4">
             <div className="flex flex-col sm:flex-row gap-3">
@@ -416,7 +475,10 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                 onChange={(e) => setNewTaskText(e.target.value)}
                 className="flex-1 transition-all duration-300"
               />
-              <Select value={newTaskCategory} onValueChange={setNewTaskCategory}>
+              <Select
+                value={newTaskCategory}
+                onValueChange={setNewTaskCategory}
+              >
                 <SelectTrigger className="w-full sm:w-[150px]">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
@@ -437,7 +499,11 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                   onClick={() => setNewTaskPriority(!newTaskPriority)}
                   className="transition-all duration-300 hover:scale-105"
                 >
-                  <Star className={`h-4 w-4 mr-2 ${newTaskPriority ? "fill-current" : ""}`} />
+                  <Star
+                    className={`h-4 w-4 mr-2 ${
+                      newTaskPriority ? "fill-current" : ""
+                    }`}
+                  />
                   Priority
                 </Button>
 
@@ -450,7 +516,9 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                       className="transition-all duration-300 hover:scale-105"
                     >
                       <Calendar className="h-4 w-4 mr-2" />
-                      {newTaskDueDate ? formatDueDate(newTaskDueDate) : "Due Date"}
+                      {newTaskDueDate
+                        ? formatDueDate(newTaskDueDate)
+                        : "Due Date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-4">
@@ -469,8 +537,10 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                             variant="outline"
                             className="text-xs h-7 flex-1"
                             onClick={() => {
-                              const today = new Date()
-                              setNewTaskDueDate(today.toISOString().split("T")[0])
+                              const today = new Date();
+                              setNewTaskDueDate(
+                                today.toISOString().split("T")[0]
+                              );
                             }}
                           >
                             Today
@@ -480,15 +550,22 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                             variant="outline"
                             className="text-xs h-7 flex-1"
                             onClick={() => {
-                              const tomorrow = addDays(new Date(), 1)
-                              setNewTaskDueDate(tomorrow.toISOString().split("T")[0])
+                              const tomorrow = addDays(new Date(), 1);
+                              setNewTaskDueDate(
+                                tomorrow.toISOString().split("T")[0]
+                              );
                             }}
                           >
                             Tomorrow
                           </Button>
                         </div>
                         {newTaskDueDate && (
-                          <Button size="sm" variant="ghost" onClick={() => setNewTaskDueDate("")} className="self-end">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setNewTaskDueDate("")}
+                            className="self-end"
+                          >
                             Clear
                           </Button>
                         )}
@@ -505,6 +582,16 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Task
+              </Button>
+
+              <Button
+                type="button"
+                variant="default"
+                size="sm"
+                onClick={handleShareTaskSheet}
+                className="transition-all duration-300 hover:scale-105"
+              >
+                Share Task Sheet
               </Button>
             </div>
           </form>
@@ -524,7 +611,11 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                   <motion.div
                     key={task.id}
                     initial={taskAnimations.initial}
-                    animate={isDeleting === task.id ? { opacity: 0, x: -100 } : taskAnimations.animate}
+                    animate={
+                      isDeleting === task.id
+                        ? { opacity: 0, x: -100 }
+                        : taskAnimations.animate
+                    }
                     exit={taskAnimations.exit}
                     layout
                     whileHover={{ scale: 1.01 }}
@@ -536,16 +627,22 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                         task.completed
                           ? "bg-muted/50 text-muted-foreground"
                           : task.priority
-                            ? "border-primary/50 bg-primary/5"
-                            : "",
-                        task.dueDate && isOverdue(task.dueDate) && !task.completed ? "border-destructive/50" : "",
+                          ? "border-primary/50 bg-primary/5"
+                          : "",
+                        task.dueDate &&
+                          isOverdue(task.dueDate) &&
+                          !task.completed
+                          ? "border-destructive/50"
+                          : ""
                       )}
                     >
                       <Button
                         variant="ghost"
                         size="icon"
                         className={`rounded-full h-6 w-6 mr-2 transition-all duration-300 ${
-                          task.completed ? "bg-primary text-primary-foreground" : "border"
+                          task.completed
+                            ? "bg-primary text-primary-foreground"
+                            : "border"
                         }`}
                         onClick={() => onCompleteTask(task.id)}
                       >
@@ -558,15 +655,28 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
                             onBlur={() => saveEdit(task)}
-                            onKeyDown={(e) => e.key === "Enter" && saveEdit(task)}
+                            onKeyDown={(e) =>
+                              e.key === "Enter" && saveEdit(task)
+                            }
                             autoFocus
                             className="transition-all duration-300"
                           />
                         ) : (
                           <div className="flex flex-col">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className={`${task.completed ? "line-through" : ""} break-words`}>{task.text}</span>
-                              <Badge variant="outline" className={`text-xs ${getCategoryColor(task.category)}`}>
+                              <span
+                                className={`${
+                                  task.completed ? "line-through" : ""
+                                } break-words`}
+                              >
+                                {task.text}
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${getCategoryColor(
+                                  task.category
+                                )}`}
+                              >
                                 {task.category}
                               </Badge>
                               {task.priority && !task.completed && (
@@ -577,9 +687,13 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                             {task.dueDate && (
                               <div className="text-xs mt-1 flex items-center">
                                 <Clock className="h-3 w-3 mr-1" />
-                                <span className={cn(getDueDateColor(task.dueDate))}>
+                                <span
+                                  className={cn(getDueDateColor(task.dueDate))}
+                                >
                                   {formatDueDate(task.dueDate)}
-                                  {isOverdue(task.dueDate) && !task.completed && " (Overdue)"}
+                                  {isOverdue(task.dueDate) &&
+                                    !task.completed &&
+                                    " (Overdue)"}
                                 </span>
                               </div>
                             )}
@@ -590,10 +704,17 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                                 <div className="flex justify-between items-center text-xs text-muted-foreground mb-1">
                                   <span className="flex items-center">
                                     <List className="h-3 w-3 mr-1" />
-                                    {task.subTasks.filter((st) => st.completed).length}/{task.subTasks.length} sub-tasks
+                                    {
+                                      task.subTasks.filter((st) => st.completed)
+                                        .length
+                                    }
+                                    /{task.subTasks.length} sub-tasks
                                   </span>
                                 </div>
-                                <Progress value={calculateProgress(task)} className="h-1" />
+                                <Progress
+                                  value={calculateProgress(task)}
+                                  className="h-1"
+                                />
                               </div>
                             )}
                           </div>
@@ -680,7 +801,9 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                                 <Input
                                   type="date"
                                   value={task.dueDate || ""}
-                                  onChange={(e) => updateTaskDueDate(task, e.target.value)}
+                                  onChange={(e) =>
+                                    updateTaskDueDate(task, e.target.value)
+                                  }
                                   className="text-sm"
                                   min={new Date().toISOString().split("T")[0]}
                                 />
@@ -691,8 +814,11 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                                     variant="outline"
                                     className="text-xs h-7 flex-1"
                                     onClick={() => {
-                                      const today = new Date()
-                                      updateTaskDueDate(task, today.toISOString().split("T")[0])
+                                      const today = new Date();
+                                      updateTaskDueDate(
+                                        task,
+                                        today.toISOString().split("T")[0]
+                                      );
                                     }}
                                   >
                                     Today
@@ -702,8 +828,11 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                                     variant="outline"
                                     className="text-xs h-7 flex-1"
                                     onClick={() => {
-                                      const tomorrow = addDays(new Date(), 1)
-                                      updateTaskDueDate(task, tomorrow.toISOString().split("T")[0])
+                                      const tomorrow = addDays(new Date(), 1);
+                                      updateTaskDueDate(
+                                        task,
+                                        tomorrow.toISOString().split("T")[0]
+                                      );
                                     }}
                                   >
                                     Tomorrow
@@ -724,11 +853,18 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                                 <Input
                                   placeholder="Add a sub-task..."
                                   value={newSubTask}
-                                  onChange={(e) => setNewSubTask(e.target.value)}
+                                  onChange={(e) =>
+                                    setNewSubTask(e.target.value)
+                                  }
                                   className="flex-1"
-                                  onKeyDown={(e) => e.key === "Enter" && addSubTask(task)}
+                                  onKeyDown={(e) =>
+                                    e.key === "Enter" && addSubTask(task)
+                                  }
                                 />
-                                <Button onClick={() => addSubTask(task)} disabled={!newSubTask.trim()}>
+                                <Button
+                                  onClick={() => addSubTask(task)}
+                                  disabled={!newSubTask.trim()}
+                                >
                                   <Plus className="h-4 w-4" />
                                 </Button>
                               </div>
@@ -739,21 +875,32 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                                     <div
                                       key={subTask.id}
                                       className={`p-2 border rounded-md flex items-center justify-between ${
-                                        subTask.completed ? "bg-muted/50 text-muted-foreground" : ""
+                                        subTask.completed
+                                          ? "bg-muted/50 text-muted-foreground"
+                                          : ""
                                       }`}
                                     >
                                       {editingSubTask &&
                                       editingSubTask.taskId === task.id &&
-                                      editingSubTask.subTaskId === subTask.id ? (
+                                      editingSubTask.subTaskId ===
+                                        subTask.id ? (
                                         <div className="flex gap-2 w-full">
                                           <Input
                                             value={editSubTaskText}
-                                            onChange={(e) => setEditSubTaskText(e.target.value)}
+                                            onChange={(e) =>
+                                              setEditSubTaskText(e.target.value)
+                                            }
                                             className="flex-1"
                                             autoFocus
-                                            onKeyDown={(e) => e.key === "Enter" && saveEditedSubTask()}
+                                            onKeyDown={(e) =>
+                                              e.key === "Enter" &&
+                                              saveEditedSubTask()
+                                            }
                                           />
-                                          <Button size="sm" onClick={saveEditedSubTask}>
+                                          <Button
+                                            size="sm"
+                                            onClick={saveEditedSubTask}
+                                          >
                                             Save
                                           </Button>
                                         </div>
@@ -764,13 +911,28 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                                               variant="ghost"
                                               size="icon"
                                               className={`rounded-full h-5 w-5 mr-2 ${
-                                                subTask.completed ? "bg-primary text-primary-foreground" : "border"
+                                                subTask.completed
+                                                  ? "bg-primary text-primary-foreground"
+                                                  : "border"
                                               }`}
-                                              onClick={() => toggleSubTaskCompletion(task.id, subTask.id)}
+                                              onClick={() =>
+                                                toggleSubTaskCompletion(
+                                                  task.id,
+                                                  subTask.id
+                                                )
+                                              }
                                             >
-                                              {subTask.completed && <CheckCircle className="h-3 w-3" />}
+                                              {subTask.completed && (
+                                                <CheckCircle className="h-3 w-3" />
+                                              )}
                                             </Button>
-                                            <span className={subTask.completed ? "line-through" : ""}>
+                                            <span
+                                              className={
+                                                subTask.completed
+                                                  ? "line-through"
+                                                  : ""
+                                              }
+                                            >
                                               {subTask.text}
                                             </span>
                                           </div>
@@ -779,7 +941,13 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                                               variant="ghost"
                                               size="icon"
                                               className="h-6 w-6"
-                                              onClick={() => startEditingSubTask(task.id, subTask.id, subTask.text)}
+                                              onClick={() =>
+                                                startEditingSubTask(
+                                                  task.id,
+                                                  subTask.id,
+                                                  subTask.text
+                                                )
+                                              }
                                             >
                                               <Edit className="h-3 w-3" />
                                             </Button>
@@ -787,7 +955,12 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                                               variant="ghost"
                                               size="icon"
                                               className="h-6 w-6 text-destructive"
-                                              onClick={() => deleteSubTask(task.id, subTask.id)}
+                                              onClick={() =>
+                                                deleteSubTask(
+                                                  task.id,
+                                                  subTask.id
+                                                )
+                                              }
                                             >
                                               <Trash2 className="h-3 w-3" />
                                             </Button>
@@ -798,7 +971,8 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
                                   ))
                                 ) : (
                                   <div className="text-center py-3 text-sm text-muted-foreground bg-muted/30 rounded-md">
-                                    No sub-tasks yet. Add some to break down your task!
+                                    No sub-tasks yet. Add some to break down
+                                    your task!
                                   </div>
                                 )}
                               </div>
@@ -823,14 +997,23 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
 
                               <Textarea
                                 placeholder="Add notes about this task..."
-                                value={task.id in taskNotes ? taskNotes[task.id] : task.notes || ""}
-                                onChange={(e) => updateTaskNotes(task.id, e.target.value)}
+                                value={
+                                  task.id in taskNotes
+                                    ? taskNotes[task.id]
+                                    : task.notes || ""
+                                }
+                                onChange={(e) =>
+                                  updateTaskNotes(task.id, e.target.value)
+                                }
                                 className="min-h-[80px] text-sm"
                               />
                             </div>
 
                             <div className="flex justify-end">
-                              <Button onClick={() => enterFocusMode(task)} className="flex items-center gap-1">
+                              <Button
+                                onClick={() => enterFocusMode(task)}
+                                className="flex items-center gap-1"
+                              >
                                 <Focus className="h-4 w-4 mr-1" />
                                 Enter Focus Mode
                               </Button>
@@ -860,5 +1043,5 @@ export default function TodoList({ tasks, onAddTask, onUpdateTask, onDeleteTask,
         )}
       </AnimatePresence>
     </motion.div>
-  )
+  );
 }
