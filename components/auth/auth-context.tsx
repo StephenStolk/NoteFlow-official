@@ -125,13 +125,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string) => {
     const supabase = getSupabaseBrowser()
     console.log("Signing up with:", email)
+    const redirectTo = process.env.NEXT_PUBLIC_SITE_URL + "/auth/callback"
+    
+
 
     // Sign up with auto-confirm disabled
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: redirectTo,
         data: {
           email_confirmed: false,
         },
@@ -169,11 +172,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithOtp = async (email: string) => {
     const supabase = getSupabaseBrowser()
+    const redirectTo = process.env.NEXT_PUBLIC_SITE_URL + "/auth/callback"
+    console.log("Sending magic link to:", email)
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: redirectTo,
       },
     })
 
